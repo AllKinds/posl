@@ -1,0 +1,12 @@
+#————————————————————————
+# Part-of-Speech Tagging Evaluation
+#————————————————————————
+#
+# Model: Basic Tagger
+# Smoothing: no
+# Test File: : heb-pos.test
+# Gold File: : heb-pos.gold
+#
+#————————————————————————
+# sent-num word-accuracy sent-accuracy
+#————————————————————————

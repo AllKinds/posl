@@ -69,11 +69,10 @@ def bucket_list(arr, normalize=True):
     return counts
 
 
-def main():
     path = 'input-files/heb-pos.train'
     dicts = build_dicts(path)
     get_dict_stats(dicts["seg_tag"])
     calc_emission_prob(dicts["tag_seg"])
 
 
-main()
+

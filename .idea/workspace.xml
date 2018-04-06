@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d49ac822-ecd5-4af7-8540-cbb30634c435" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/question1.py" />
-      <change type="MOVED" beforePath="C:\Users\Omri\Desktop\NLP\ממן 12\posl\parser.py" afterPath="$PROJECT_DIR$/fileParser.py" />
-    </list>
+    <list default="true" id="d49ac822-ecd5-4af7-8540-cbb30634c435" name="Default" comment="" />
     <ignored path="posl.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -285,7 +282,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="471" y="115" width="1317" height="789" extended-state="0" />
+    <frame x="471" y="115" width="1317" height="789" extended-state="1" />
     <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.245196" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />

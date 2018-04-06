@@ -27,7 +27,7 @@ def get_num_of_unigram_segment_instances_in_corpus(segment_tag_dictionary):
     :param segment_tag_dictionary: A Dictionary containing each unique segment as a key and all references\tags as a list of values for each instance
     :return: The Number of Unigram Segment Instances
     """
-    return reduce(lambda mem , seg : mem+len(seg) , segment_tag_dictionary , 0);
+    return reduce(lambda mem , key : mem+len(segment_tag_dictionary[key]) , segment_tag_dictionary.keys() , 0);
 
 num_of_unigram_segment_instances_in_train = get_num_of_unigram_segment_instances_in_corpus(seg_tag_train)
 num_of_unigram_segment_instances_in_gold = get_num_of_unigram_segment_instances_in_corpus(seg_tag_gold)

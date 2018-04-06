@@ -76,4 +76,4 @@ def main():
     calc_emission_prob(dicts["tag_seg"])
 
 
-main()
+

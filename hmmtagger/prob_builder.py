@@ -102,7 +102,10 @@ def read_lex(path):
             s_line = str.strip(line)
             emissions = re.split(r'\t+', s_line)
             w = emissions.pop(0)
-            emissions_dict[w] = dict(zip(emissions[::2], emissions[1::2]))
+            for tag, p in zip(emissions[::2], emissions[1::2]):
+                if p != 0:
+                    emissions_dict[(w, tag)] = p
+            #emissions_dict[w] = dict(zip(emissions[::2], emissions[1::2]))
     return emissions_dict
 
 
@@ -124,6 +127,7 @@ def train(train_file, lex_file, gram_file):
 
 def test():
     train('../input-files/heb-pos.train', '../fuck.lex', '../fuck.gram')
+    emissions_from_lex_file = read_lex('../fuck.lex')
     # dics = parser.build_dicts("../input-files/heb-pos.train")
     # emissions = calc_emission_prob(dics["tag_seg"], dics["seg_tag"].keys(), dics["tag_seg"].keys())
     # write_lex(emissions, "../fuck.lex")
@@ -131,7 +135,7 @@ def test():
     # counts = calc_gram_counts(dics["sentences"])
     # transitions = calc_transition_prob(dics["sentences"])
     # write_gram(counts, transitions, "../fuck1.gram")
-    # fuck = "fuck"
+    fuck = "fuck"
 
 
 if __name__ == '__main__':

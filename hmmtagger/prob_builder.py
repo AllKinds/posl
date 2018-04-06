@@ -1,7 +1,10 @@
 import file_parser as parser
 from collections import Counter
+from functools import partial
 import math
 import re
+
+ln = math.log
 
 
 def calc_gram_counts(sentences, n=2, start_state="<s>", end_state="</s>", delim="_"):
@@ -26,12 +29,11 @@ def ngram_likelihood(ngram_counts, n_1_gram_counts, delim="_", f=math.log10):
     return ngram_likelihoods
 
 
-def calc_transition_prob(sentences):
-    unigram_counts, bigram_counts = calc_gram_counts(sentences)[:2]
+def calc_transition_prob(gram_counts):
+    unigram_counts, bigram_counts = gram_counts[:2]
     n = sum([c for gram, c in unigram_counts.items()])
-    f = lambda c: math.log10(c/n)
-    unigram_likelihoods = map_dict(unigram_counts, f)
-    return unigram_likelihoods, ngram_likelihood(bigram_counts, unigram_counts)
+    unigram_likelihoods = map_dict(unigram_counts, lambda c: ln(c/n))
+    return unigram_likelihoods, ngram_likelihood(bigram_counts, unigram_counts, f=ln)
 
 
 def write_gram(gram_counts, gram_transion_probs, out_file):
@@ -46,17 +48,21 @@ def write_gram(gram_counts, gram_transion_probs, out_file):
                 f.write(str(p) + "\t" + gram.replace("_", "\t") + "\n")
 
 
-def read_gram():
-    pass
-
-
 def generate_ngrams(input_list, n):
     return list(zip(*[input_list[i:] for i in range(n)]))
 
 
+def calc_emission_prob2(tag_dict, ali_words, tags):
+    hist = partial(bucket_list, f=ln)
+    emission_dict = map_dict(tag_dict, hist)
+    emission_w_t = dict()
+    pass
+
+
 def calc_emission_prob(tag_dict, words, all_tags):
     # emission_dict = dict(map(lambda kv: (kv[0], f(kv[1])), tag_dict.items()))
-    emission_dict = map_dict(tag_dict, bucket_list)
+    hist = partial(bucket_list, f=ln)
+    emission_dict = map_dict(tag_dict, hist)
     inv_emissions = {w: dict() for w in words}
     for w in words:
         for t in all_tags:
@@ -100,15 +106,32 @@ def read_lex(path):
     return emissions_dict
 
 
+def train(train_file, lex_file, gram_file):
+    dics = parser.build_dicts(train_file)
+    tag_seg_dict = dics["tag_seg"]
+    seg_tag_dict = dics["seg_tag"]
+    sentences = dics["sentences"]
+    # calculate emission probs
+    all_tags = tag_seg_dict.keys()  # todo: a real list with all the possible tags
+    all_words = seg_tag_dict.keys()
+    emissions = calc_emission_prob(tag_seg_dict, all_words, all_tags)
+    write_lex(emissions, lex_file)  # write *.lex file
+    # calculate transitions
+    ngrams_counts = calc_gram_counts(sentences)
+    transitions = calc_transition_prob(ngrams_counts)
+    write_gram(ngrams_counts, transitions, gram_file)  # write *.gram file
+
+
 def test():
-    dics = parser.build_dicts("../input-files/heb-pos.train")
-    emissions = calc_emission_prob(dics["tag_seg"], dics["seg_tag"].keys(), dics["tag_seg"].keys())
-    write_lex(emissions, "../fuck.lex")
-    emissions_from_file = read_lex('../fuck.lex')
-    counts = calc_gram_counts(dics["sentences"])
-    transitions = calc_transition_prob(dics["sentences"])
-    write_gram(counts, transitions, "../fuck1.gram")
-    fuck = "fuck"
+    train('../input-files/heb-pos.train', '../fuck.lex', '../fuck.gram')
+    # dics = parser.build_dicts("../input-files/heb-pos.train")
+    # emissions = calc_emission_prob(dics["tag_seg"], dics["seg_tag"].keys(), dics["tag_seg"].keys())
+    # write_lex(emissions, "../fuck.lex")
+    # emissions_from_file = read_lex('../fuck.lex')
+    # counts = calc_gram_counts(dics["sentences"])
+    # transitions = calc_transition_prob(dics["sentences"])
+    # write_gram(counts, transitions, "../fuck1.gram")
+    # fuck = "fuck"
 
 
 if __name__ == '__main__':

@@ -28,18 +28,26 @@ def ngram_likelihood(ngram_counts, n_1_gram_counts, delim="_", f=math.log10):
 
 def calc_transition_prob(sentences):
     unigram_counts, bigram_counts = calc_gram_counts(sentences)[:2]
-    return ngram_likelihood(bigram_counts, unigram_counts)
+    n = sum([c for gram, c in unigram_counts.items()])
+    f = lambda c: math.log10(c/n)
+    unigram_likelihoods = map_dict(unigram_counts, f)
+    return unigram_likelihoods, ngram_likelihood(bigram_counts, unigram_counts)
 
 
-def write_gram(gram_counts, gram_probs, out_file):
+def write_gram(gram_counts, gram_transion_probs, out_file):
     with open(out_file, 'w') as f:
         f.write("\data\\" + "\n")
         for i, counts in enumerate(gram_counts):
             count = sum([c for g, c in counts.items()])
-            f.write("ngram " + str(i) + " = " + str(count) + "\n")
-        f.write("\\2-grams\\\n")
-        for gram, p in gram_probs.items():
-            f.write(str(p) + "\t" + "\t".join(re.split("_", gram)) + "\n")
+            f.write("ngram " + str(i+1) + " = " + str(count) + "\n")
+        for i, probs in enumerate(gram_transion_probs):
+            f.write("\\" + str(i+1) + "-grams\\\n")
+            for gram, p in probs.items():
+                f.write(str(p) + "\t" + gram.replace("_", "\t") + "\n")
+
+
+def read_gram():
+    pass
 
 
 def generate_ngrams(input_list, n):
@@ -47,8 +55,8 @@ def generate_ngrams(input_list, n):
 
 
 def calc_emission_prob(tag_dict, words, all_tags):
-    f = bucket_list
-    emission_dict = dict(map(lambda kv: (kv[0], f(kv[1])), tag_dict.items()))
+    # emission_dict = dict(map(lambda kv: (kv[0], f(kv[1])), tag_dict.items()))
+    emission_dict = map_dict(tag_dict, bucket_list)
     inv_emissions = {w: dict() for w in words}
     for w in words:
         for t in all_tags:
@@ -63,8 +71,13 @@ def bucket_list(arr, normalize=True, f=math.log10):
     counts = Counter(arr)
     if normalize:
         n = len(arr)
-        counts = dict(map(lambda kv: (kv[0], f(kv[1]/n)), counts.items()))
+        # counts = dict(map(lambda kv: (kv[0], f(kv[1]/n)), counts.items()))
+        counts = map_dict(counts, lambda c: f(c/n))
     return counts
+
+
+def map_dict(dict_obj, func):
+    return dict(map(lambda kv: (kv[0], func(kv[1])), dict_obj.items()))
 
 
 def write_lex(emission_dict, out_file):

@@ -46,7 +46,7 @@ def num_of_correct_tags(tagged_s, gold_s):
     return correct_tags_num
 
 
-def evaluate_component(tagged_path, gold_path):
+def evaluate_component(tagged_path, gold_path, model_name):
     # with open('tagged_path', 'r') as tagged_f, open('gold_path', 'r') as gold_f:
     #     for line_t, line_g in zip(tagged_f, gold_f):
     tagged_sentences = build_dicts(tagged_path)['sentences']
@@ -61,7 +61,8 @@ def evaluate_component(tagged_path, gold_path):
         Allj_arr.append(Allj)
     All = sum(Allj_arr)/len(gold_sentences)
     A = sum(Aj * nj for Aj, nj in zip(Aj_arr, nj_arr)) / sum(nj_arr)
-    create_eval_file(Aj_arr, Allj_arr, A, All)
+    eval_path = 'output-files/heb-pos.%s.eval' % model_name
+    create_eval_file(Aj_arr, Allj_arr, A, All, eval_path)
 
     return {
         'All': All,
@@ -71,8 +72,8 @@ def evaluate_component(tagged_path, gold_path):
     }
 
 
-def create_eval_file(Aj, Allj, A, All):
-    with open(EVAL_PATH, "w+") as eval_f, open(BASE_PATH, "r") as base_r:
+def create_eval_file(Aj, Allj, A, All, eval_path=EVAL_PATH):
+    with open(eval_path, "w+") as eval_f, open(BASE_PATH, "r") as base_r:
         lines = base_r.readlines()
         eval_f.writelines(lines)
 
@@ -88,8 +89,10 @@ def create_eval_file(Aj, Allj, A, All):
 def do_stuff():
     training_params = training_component(TRAIN_PATH)
     tagging_component(TEST_PATH, training_params)
-    val = evaluate_component(TAG_PATH, GOLD_PATH)
+    val = evaluate_component(TAG_PATH, GOLD_PATH, 'basic')
     print(val)
 
 
-do_stuff()
+if __name__ == '__main__':
+    do_stuff()
+

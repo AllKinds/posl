@@ -59,17 +59,16 @@ def calc_emission_prob2(tag_dict, ali_words, tags):
     pass
 
 
-def calc_emission_prob(tag_dict, words, all_tags):
+def calc_emission_prob(tag_dict, words, tags):
     # emission_dict = dict(map(lambda kv: (kv[0], f(kv[1])), tag_dict.items()))
     hist = partial(bucket_list, f=ln)
     emission_dict = map_dict(tag_dict, hist)
     inv_emissions = {w: dict() for w in words}
     for w in words:
-        for t in all_tags:
-            e_p = 0
+        for t in tags:
             if emission_dict[t] and w in emission_dict[t]:
                 e_p = emission_dict[t][w]
-            inv_emissions[w][t] = e_p
+                inv_emissions[w][t] = e_p
     return inv_emissions
 
 
@@ -103,8 +102,7 @@ def read_lex(path):
             emissions = re.split(r'\t+', s_line)
             w = emissions.pop(0)
             for tag, p in zip(emissions[::2], emissions[1::2]):
-                if p != 0:
-                    emissions_dict[(w, tag)] = p
+                emissions_dict[(w, tag)] = float(p)
             #emissions_dict[w] = dict(zip(emissions[::2], emissions[1::2]))
     return emissions_dict
 

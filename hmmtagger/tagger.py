@@ -4,7 +4,6 @@ import file_parser as parser
 from basic_tagger import GOLD_PATH, TEST_PATH, TAG_PATH, evaluate_component
 
 
-
 def create_transition_func(transition_dict, smoothing_func):
     return lambda x, y: \
         transition_dict[x, y] if (x, y) in transition_dict else smoothing_func(x, y)
@@ -18,6 +17,19 @@ def default_unseen_word_tag(word, tag, emission_dict):
         # if the word is not in the dictionary, tag it as NNP
         return 0
     return -float("inf")
+
+
+def decode2(sentences, lex_file, gram_file):
+    emission_dict = parser.parse_emission(lex_file)
+    transition_dict = parser.parse_transition(gram_file)
+
+    transition = create_transition_func(transition_dict,
+                                        smoothing_func=lambda x, y: -float("inf"))
+    emission = create_transition_func(emission_dict,
+                                      smoothing_func=lambda x, y:
+                                      default_unseen_word_tag(x, y, emission_dict))
+    tagged = list(map(lambda sen: viterbi.run_viterbi(TAGS, transition, emission, sen), sentences))
+    return tagged
 
 
 def decode(untagged_file, lex_file, gram_file, model_name):

@@ -1,6 +1,7 @@
 import sys
 import hmmtagger.tagger as hmm_tagger
-from config import BASIC_MODEL_NAME, HMM_MODEL_NAME
+from config import BASIC_MODEL_NAME, HMM_MODEL_NAME, TAGGED_FILE
+import file_parser as parser
 
 
 def main(argv):
@@ -11,8 +12,36 @@ def main(argv):
 
 
 def decode(model, test_file, param_files):
+    model_name = '?'
+    if model == '1':
+        model_name = BASIC_MODEL_NAME
+    elif model == '2':
+        model_name = HMM_MODEL_NAME
+
+    sentences = parser.parse_sentences(test_file)
+    tagged = []
+    tagged_path = TAGGED_FILE % model_name
     if model == '2':
-        hmm_tagger.decode(test_file, *param_files[:2], HMM_MODEL_NAME)
+        tagged = hmm_tagger.decode2(sentences, *param_files[:2])
+
+    # write tagger results
+    write_tagged(tagged_path, sentences, tagged)
+
+
+"""
+write tagged file
+sentences - the original untagged sentences
+tagged - the corresponding sentences` tags (list of tag lists) 
+"""
+
+
+def write_tagged(path, sentences, tagged):
+    with open(path, "w") as tagged_file:
+        for sen, tags in zip(sentences, tagged):
+            for word, tag in zip(sen, tags):
+                tagged_file.writelines(word + '\t' + tag + '\n')
+            tagged_file.writelines('\n')  # end of sentence
+        tagged_file.writelines('\n')  # end of file
 
 
 if __name__ == "__main__":

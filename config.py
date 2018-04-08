@@ -44,3 +44,11 @@ TAGS = ['AGR',
 
 ST = '<s>'
 ET = '</s>'
+LEX_FILE = 'fuck.lex'
+GRAM_FILE = 'fuck.gram'
+TAGGED_FILE = 'heb-pos.%s.tagged'
+BASIC_MODEL_NAME = 'basic'
+HMM_MODEL_NAME = 'sharp'
+BASE_PATH = 'output-files/base.eval'
+EVAL_PATH = 'heb-pos.%s.eval'
+GOLD_PATH = 'input-files/heb-pos.gold'

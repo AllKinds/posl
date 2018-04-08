@@ -3,6 +3,11 @@ import math
 from collections import Counter
 
 
+"""
+builds dictionaries from tagged sentences file
+"""
+
+
 def build_dicts(path):
     # segment to POS-tag mappings
     seg_tag = dict()
@@ -30,49 +35,117 @@ def build_dicts(path):
     }
 
 
+"""
+gets sentences list from untagged file
+"""
+
+
+def parse_sentences(path):
+    sentences = []
+    with open(path) as f:
+        sentence = []
+        for line in f:
+            s_line = str.strip(line)
+            if s_line:
+                segment = s_line
+                sentence.append(segment)
+            else:
+                sentences.append(sentence)
+                sentence = []
+
+    return sentences
+
+
+"""
+returns bigram transitions dictionary from .gram file 
+"""
+
+
+def parse_transition(gram_path):
+    transition_dict = dict()
+    with open(gram_path, 'r') as f:
+        in_2gram_section = False
+        for line in f:
+            if not in_2gram_section:
+                if line != '\\2-grams\\\n':
+                    continue
+                else:
+                    in_2gram_section = True
+                    continue
+        # 2 Gram Section
+            # Read till the empty line
+            if line == '\n':
+                break
+
+            s_line = str.strip(line)
+            bigram = re.split(r'\t+', s_line)
+            logprob = float(bigram.pop(0))
+            transition_dict[tuple(bigram)] = logprob
+
+    return transition_dict
+
+
+"""
+returns emission dictionary from .lex file
+"""
+
+
+def parse_emission(lex_path):
+    emissions_dict = dict()
+    with open(lex_path) as f:
+        for line in f:
+            s_line = str.strip(line)
+            emissions = re.split(r'\t+', s_line)
+            w = emissions.pop(0)
+            for tag, p in zip(emissions[::2], emissions[1::2]):
+                emissions_dict[(w, tag)] = float(p)
+            # emissions_dict[w] = dict(zip(emissions[::2], emissions[1::2]))
+    return emissions_dict
+
+
 def _map_value_to_list(dict_obj, key, value):
     if key in dict_obj:
         dict_obj[key].append(value)
     else:
         dict_obj[key] = [value]
 
-
-"""maybe in another file"""
-
-
-def get_dict_stats(dict_obj):
-    unique_keys = len(dict_obj.keys())
-    key_instances = sum(map(lambda l: len(l), dict_obj.values()))
-    unique_values = map(lambda l: len(set(l)), dict_obj.values())
-    unique_values_sum = sum(unique_values)
-    print('unique:', unique_keys, 'instances:', key_instances,
-          'tags per segment:', unique_values_sum / unique_keys)
-
-
-""" 
-    another file
-    calcs P(word|tag)
-"""
-
-
-def calc_emission_prob(tag_dict):
-    f = bucket_list
-    emission_dict = dict(map(lambda kv: (kv[0], f(kv[1])), tag_dict.items()))
-    return emission_dict
-
-
-def bucket_list(arr, normalize=True):
-    counts = Counter(arr)
-    if normalize:
-        n = len(arr)
-        counts = dict(map(lambda kv: (kv[0], math.log2(kv[1]/n)), counts.items()))
-    return counts
-
-
-def main():
-    path = 'input-files/heb-pos.train'
-    dicts = build_dicts(path)
-    get_dict_stats(dicts["seg_tag"])
-    calc_emission_prob(dicts["tag_seg"])
-
-
+#
+# """maybe in another file"""
+#
+#
+# def get_dict_stats(dict_obj):
+#     unique_keys = len(dict_obj.keys())
+#     key_instances = sum(map(lambda l: len(l), dict_obj.values()))
+#     unique_values = map(lambda l: len(set(l)), dict_obj.values())
+#     unique_values_sum = sum(unique_values)
+#     print('unique:', unique_keys, 'instances:', key_instances,
+#           'tags per segment:', unique_values_sum / unique_keys)
+#
+#
+# """
+#     another file
+#     calcs P(word|tag)
+# """
+#
+#
+# def calc_emission_prob(tag_dict):
+#     f = bucket_list
+#     emission_dict = dict(map(lambda kv: (kv[0], f(kv[1])), tag_dict.items()))
+#     return emission_dict
+#
+#
+# def bucket_list(arr, normalize=True):
+#     counts = Counter(arr)
+#     if normalize:
+#         n = len(arr)
+#         counts = dict(map(lambda kv: (kv[0], math.log2(kv[1]/n)), counts.items()))
+#     return counts
+#
+#
+# def main():
+#     path = 'input-files/heb-pos.train'
+#     dicts = build_dicts(path)
+#     get_dict_stats(dicts["seg_tag"])
+#     calc_emission_prob(dicts["tag_seg"])
+#
+#

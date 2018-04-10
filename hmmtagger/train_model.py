@@ -3,7 +3,7 @@ from collections import Counter
 from functools import partial
 import math
 import re
-from config import ST, ET
+from config import ST, ET, UNKNOWN_WORD_SYMBOL
 
 ln = math.log
 
@@ -77,16 +77,31 @@ tags: all unique tags in the corpus
 """
 
 
-def calc_emission_prob(tag_dict, words, tags):
+def calc_emission_prob(tag_dict, words, tags, smooth=True):
     # emission_dict = dict(map(lambda kv: (kv[0], f(kv[1])), tag_dict.items()))
     hist = partial(bucket_list, f=ln)
+    voc_size = 0
+    DELTA = 0.09
+    if smooth:  # laplace smoothing
+        counts = map_dict(tag_dict, partial(bucket_list, normalize=False))
+        voc_size = sum(map_dict(counts, lambda count: sum(count.values())).values())
+        hist = partial(laplace_smooth, voc_size=voc_size, delta=DELTA)
     emission_dict = map_dict(tag_dict, hist)
+    if smooth:
+        for tag in tags:
+            emission_dict[tag][UNKNOWN_WORD_SYMBOL] = ln(DELTA / (len(tag_dict[tag]) + voc_size))
     inv_emissions = {w: dict() for w in words}
     for w in words:
         for t in tags:
             if emission_dict[t] and w in emission_dict[t]:
                 e_p = emission_dict[t][w]
                 inv_emissions[w][t] = e_p
+    if smooth:
+        inv_emissions[UNKNOWN_WORD_SYMBOL] = dict()
+        for t in tags:
+            if emission_dict[t] and UNKNOWN_WORD_SYMBOL in emission_dict[t]:
+                e_p = emission_dict[t][UNKNOWN_WORD_SYMBOL]
+                inv_emissions[UNKNOWN_WORD_SYMBOL][t] = e_p
     return inv_emissions
 
 
@@ -111,7 +126,7 @@ outputs .lex & .gram parameter files
 """
 
 
-def train(train_file, lex_file_out, gram_file_out):
+def train(train_file, lex_file_out, gram_file_out, smooth):
     dics = parser.build_dicts(train_file)
     tag_seg_dict = dics["tag_seg"]
     seg_tag_dict = dics["seg_tag"]
@@ -119,7 +134,7 @@ def train(train_file, lex_file_out, gram_file_out):
     # calculate emission probs
     tags = tag_seg_dict.keys()
     words = seg_tag_dict.keys()
-    emissions = calc_emission_prob(tag_seg_dict, words, tags)
+    emissions = calc_emission_prob(tag_seg_dict, words, tags, smooth=smooth)
     write_lex(emissions, lex_file_out)  # write *.lex file
     # calculate transitions
     ngrams_counts = calc_gram_counts(sentences)
@@ -140,18 +155,33 @@ def bucket_list(arr, normalize=True, f=math.log10):
     counts = Counter(arr)
     if normalize:
         n = len(arr)
-        # counts = dict(map(lambda kv: (kv[0], f(kv[1]/n)), counts.items()))
         counts = map_dict(counts, lambda c: f(c/n))
     return counts
 
 
-def map_dict(dict_obj, func):
+def identity(x):
+    return x
+
+
+def map_dict(dict_obj, func=identity):
     return dict(map(lambda kv: (kv[0], func(kv[1])), dict_obj.items()))
 
 
-def main():
-    train('../input-files/heb-pos.train', '../input-files/fuck.lex', '../input-files/fuck.gram')
+def laplace_smooth(arr, voc_size=0, delta=1, f=ln):
+    counts = Counter(arr)
+    n = len(arr)
+    counts = map_dict(counts, lambda c: f((c+delta)/(n+voc_size*delta)))
+    return counts
+
+
+def main(smooth):
+    lex_out = '../fuck.lex'
+    gram_out = '../fuck.gram'
+    if smooth:
+        lex_out = '../fuck_smooth.lex'
+        gram_out = '../fuck_smooth.gram'
+    train('../input-files/heb-pos.train', lex_out, gram_out, smooth)
 
 
 if __name__ == '__main__':
-    main()
+    main(True)

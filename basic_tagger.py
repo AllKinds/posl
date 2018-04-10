@@ -61,7 +61,7 @@ def evaluate_component(tagged_path, gold_path, model_name):
         Allj_arr.append(Allj)
     All = sum(Allj_arr)/len(gold_sentences)
     A = sum(Aj * nj for Aj, nj in zip(Aj_arr, nj_arr)) / sum(nj_arr)
-    eval_path = 'output-files/heb-pos.%s.eval' % model_name
+    eval_path = '../heb-pos.%s.eval' % model_name
     create_eval_file(Aj_arr, Allj_arr, A, All, eval_path)
 
     return {

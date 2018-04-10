@@ -21,7 +21,7 @@ def run_viterbi(tags, transition, emission, sentence):
 
     for t in range(1, len(sentence)):
         for tag in tags:
-            if tag == 'yyDOT' and sentence[t] == 'yyDOT':
+            if tag == 'NN' and sentence[t] == 'ANFIM':
                 my_lst = list((viterbi[tag_b, t-1] + transition(tag_b, tag) + emission(sentence[t], tag)) for tag_b in tags)
                 tmp = max((viterbi[tag_b, t-1] + transition(tag_b, tag) + emission(sentence[t], tag)) for tag_b in tags)
                 so = [t, sentence[t], tag, tmp]

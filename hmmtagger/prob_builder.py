@@ -124,12 +124,12 @@ def train(train_file, lex_file, gram_file):
 
 
 def test():
-    train('../input-files/heb-pos.train', '../fuck.lex', '../fuck.gram')
-    emissions_from_lex_file = read_lex('../fuck.lex')
+    train('../input-files/heb-pos.train', '../fuck1.lex', '../fuck1.gram')
+    emissions_from_lex_file = read_lex('../fuck1.lex')
     # dics = parser.build_dicts("../input-files/heb-pos.train")
     # emissions = calc_emission_prob(dics["tag_seg"], dics["seg_tag"].keys(), dics["tag_seg"].keys())
-    # write_lex(emissions, "../fuck.lex")
-    # emissions_from_file = read_lex('../fuck.lex')
+    # write_lex(emissions, "../fuck1.lex")
+    # emissions_from_file = read_lex('../fuck1.lex')
     # counts = calc_gram_counts(dics["sentences"])
     # transitions = calc_transition_prob(dics["sentences"])
     # write_gram(counts, transitions, "../fuck1.gram")

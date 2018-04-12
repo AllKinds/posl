@@ -63,10 +63,12 @@ def write_gram(gram_counts, gram_transion_probs, out_file):
         for i, counts in enumerate(gram_counts):
             count = sum([c for g, c in counts.items()])
             f.write("ngram " + str(i+1) + " = " + str(count) + "\n")
+        f.write("\n")
         for i, probs in enumerate(gram_transion_probs):
             f.write("\\" + str(i+1) + "-grams\\\n")
             for gram, p in probs.items():
                 f.write(str(p) + "\t" + gram.replace("_", "\t") + "\n")
+            f.write("\n")
 
 
 """

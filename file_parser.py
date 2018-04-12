@@ -61,28 +61,47 @@ returns bigram transitions dictionary from .gram file
 """
 
 
+def get_smoothed_transition(uni_dict, bigram_dict, delta=0.75):
+    trans_dict = dict()
+    for tag_a in uni_dict.keys():
+        for tag_b in uni_dict.keys():
+            trans_dict[(tag_a, tag_b)] = delta * bigram_dict[tag_a, tag_b] if (tag_a, tag_b) in bigram_dict else -float('inf')
+            trans_dict[(tag_a, tag_b)] += (1 - delta) * uni_dict[tag_b]
+    return trans_dict
+
+
 def parse_transition(gram_path):
-    transition_dict = dict()
+    bigram_dict = dict()
+    unigram_dict = dict()
     with open(gram_path, 'r') as f:
-        in_2gram_section = False
+        section = 0
         for line in f:
-            if not in_2gram_section:
-                if line != '\\2-grams\\\n':
+            if section == 0:
+                if line == '\\1-grams\\\n':
+                    section += 1
+                continue
+            elif section == 1:
+                if line == '\n':
+                    section += 1
+                    continue
+                s_line = str.strip(line)
+                unigram = re.split(r'\t+', s_line)
+                unigram_dict[unigram[1]] = float(unigram[0])
+
+            elif section == 2:
+                if line == '\\2-grams\\\n':
                     continue
                 else:
-                    in_2gram_section = True
-                    continue
-        # 2 Gram Section
-            # Read till the empty line
-            if line == '\n':
-                break
+                    if line == '\n':
+                        section += 1
+                        break
 
-            s_line = str.strip(line)
-            bigram = re.split(r'\t+', s_line)
-            logprob = float(bigram.pop(0))
-            transition_dict[tuple(bigram)] = logprob
+                    s_line = str.strip(line)
+                    bigram = re.split(r'\t+', s_line)
+                    logprob = float(bigram.pop(0))
+                    bigram_dict[tuple(bigram)] = logprob
 
-    return transition_dict
+    return get_smoothed_transition(unigram_dict, bigram_dict)
 
 
 """

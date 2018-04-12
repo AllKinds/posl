@@ -21,9 +21,13 @@ def default_unseen_word_tag(word, tag, emission_dict):
 
 
 def laplace_smooth_unseen_word(word, tag, emission_dict):
+    laplace_smooth_unseen_word.counter += 1
     if (UNKNOWN_WORD_SYMBOL, tag) not in emission_dict:
         return -float("inf")
     return emission_dict[UNKNOWN_WORD_SYMBOL, tag]
+
+
+laplace_smooth_unseen_word.counter = 0
 
 
 def decode2(sentences, lex_file, gram_file):
@@ -75,6 +79,7 @@ def main(smooth):
     decode('../input-files/heb-pos.test', lex_file, gram_file, smooth)
     tagged_path = '../heb-pos.%s.tagged' % model
     evaluate_component(tagged_path, '../input-files/heb-pos.gold', model, '../output-files/base.eval')
+    print(laplace_smooth_unseen_word.counter)
 
 
 if __name__ == '__main__':

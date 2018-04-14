@@ -22,7 +22,7 @@ def num_of_correct_tags(tagged_s, gold_s):
     return correct_tags_num
 
 
-def evaluate_component(tagged_path, gold_path, model_name, base=BASE_PATH):
+def evaluate_component(tagged_path, gold_path, model_name, base=BASE_PATH, eval_file=''):
     # with open('tagged_path', 'r') as tagged_f, open('gold_path', 'r') as gold_f:
     #     for line_t, line_g in zip(tagged_f, gold_f):
     tagged_sentences = parser.build_dicts(tagged_path)['sentences']
@@ -38,6 +38,8 @@ def evaluate_component(tagged_path, gold_path, model_name, base=BASE_PATH):
     All = sum(Allj_arr)/len(gold_sentences)
     A = sum(Aj * nj for Aj, nj in zip(Aj_arr, nj_arr)) / sum(nj_arr)
     eval_path = EVAL_PATH % model_name
+    if eval_file:
+        eval_path = eval_file
     create_eval_file(Aj_arr, Allj_arr, A, All, eval_path, base)
 
     return {

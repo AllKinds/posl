@@ -1,4 +1,4 @@
-from file_parser import build_dicts
+from file_parser import build_dicts, parse_sentences
 
 TRAIN_PATH = 'input-files/heb-pos.train'
 TEST_PATH = 'input-files/heb-pos.test'
@@ -8,7 +8,7 @@ EVAL_PATH = 'output-files/heb-pos.basic.eval'
 BASE_PATH = 'output-files/base.eval'
 
 
-def train(seg_tag):
+def map_most_common(seg_tag):
     return dict(map(lambda seg: (seg, most_common(seg_tag[seg])), seg_tag))
 
 
@@ -18,8 +18,32 @@ def most_common(tag_lst):
 
 def training_component(path):
     dicts = build_dicts(path)
-    trained = train(dicts["seg_tag"])
+    trained = map_most_common(dicts["seg_tag"])
     return trained
+
+
+def write_train_results(most_common_dict, out_file):
+    with open(out_file, 'w') as f:
+        for word, tag in most_common_dict.items():
+            f.write(word + '\t' + tag + '\n')
+
+
+def train(train_file, out_file):
+    mc_dict = training_component(train_file)
+    write_train_results(mc_dict, out_file)
+
+
+def tag_word(dic, word):
+    if word not in dic:
+        return 'NNP'
+    return dic[word]
+
+
+def decode(sentences, train_res_file):
+    most_common_d = build_dicts(train_res_file)["seg_tag"]
+    most_common_d = dict(map(lambda kv: (kv[0], kv[1][0]), most_common_d.items()))
+    return list(map(lambda sentence: list(map(lambda word: tag_word(most_common_d, word),
+                                              sentence)), sentences))
 
 
 def tagging_component(test_path, train_params):
@@ -93,6 +117,12 @@ def do_stuff():
     print(val)
 
 
+def main():
+    sentences = parse_sentences('input-files/heb-pos.test')
+    tagged = decode(sentences, 'most_common.basic')
+    print('fffff')
+
+
 if __name__ == '__main__':
-    do_stuff()
+    main()
 

@@ -89,9 +89,10 @@ def calc_emission_prob(tag_dict, words, tags, smooth=True):
         voc_size = sum(map_dict(counts, lambda count: sum(count.values())).values())
         hist = partial(laplace_smooth, voc_size=voc_size, delta=DELTA)
     emission_dict = map_dict(tag_dict, hist)
-    if smooth:
+    if smooth:  # add values for unknown words for each state
         for tag in tags:
             emission_dict[tag][UNKNOWN_WORD_SYMBOL] = ln(DELTA / (len(tag_dict[tag]) + voc_size))
+    # inverse the dictionary
     inv_emissions = {w: dict() for w in words}
     for w in words:
         for t in tags:
@@ -128,8 +129,8 @@ outputs .lex & .gram parameter files
 """
 
 
-def train(train_file, lex_file_out, gram_file_out, smooth):
-    dics = parser.build_dicts(train_file)
+def train(train_file, lex_file_out, gram_file_out, smooth, lines_to_read=-1):
+    dics = parser.build_dicts(train_file, lines_to_read=lines_to_read)
     tag_seg_dict = dics["tag_seg"]
     seg_tag_dict = dics["seg_tag"]
     sentences = dics["sentences"]

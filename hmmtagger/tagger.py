@@ -27,6 +27,18 @@ def laplace_smooth_unseen_word(word, tag, emission_dict):
     return emission_dict[UNKNOWN_WORD_SYMBOL, tag]
 
 
+def unseen_word_smooth(word, tag, emission_dict):
+    if any(k[0] == UNKNOWN_WORD_SYMBOL for k in emission_dict):  # we use add-delta smoothing
+        if (UNKNOWN_WORD_SYMBOL, tag) in emission_dict:
+            return emission_dict[UNKNOWN_WORD_SYMBOL, tag]
+    elif tag == 'NNP':  # no smoothing - we tag as NNP
+        for s in TAGS:
+            if (word, s) in emission_dict:
+                return -float("inf")
+        # if the word is not in the dictionary, tag it as NNP
+        return 0
+    return -float("inf")
+
 laplace_smooth_unseen_word.counter = 0
 
 
@@ -34,16 +46,20 @@ def decode2(sentences, lex_file, gram_file):
     emission_dict = parser.parse_emission(lex_file)
     transition_dict = parser.parse_transition(gram_file)
 
+    unseen_w_f = default_unseen_word_tag
+    if any(k[0] == UNKNOWN_WORD_SYMBOL for k in emission_dict):
+        unseen_w_f = laplace_smooth_unseen_word
+
     transition = create_transition_func(transition_dict,
                                         smoothing_func=lambda x, y: -float("inf"))
     emission = create_transition_func(emission_dict,
                                       smoothing_func=lambda x, y:
-                                      laplace_smooth_unseen_word(x, y, emission_dict))
+                                      unseen_w_f(x, y, emission_dict))
     tagged = list(map(lambda sen: viterbi.run_viterbi(TAGS, transition, emission, sen), sentences))
     return tagged
 
 
-def decode(untagged_file, lex_file, gram_file, smooth):
+def decode(untagged_file, lex_file, gram_file, smooth, tagged_out=''):
     emission_dict = parser.parse_emission(lex_file)
     transition_dict = parser.parse_transition(gram_file)
     sentences = parser.parse_sentences(untagged_file)
@@ -56,6 +72,8 @@ def decode(untagged_file, lex_file, gram_file, smooth):
     if smooth:
         model = 'smooth'
     tagged_path = '../heb-pos.%s.tagged' % model
+    if tagged_out:
+        tagged_path = tagged_out
 
     with open(tagged_path, "w") as tagged_file:
         for sentence in sentences:

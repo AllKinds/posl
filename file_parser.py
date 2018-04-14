@@ -8,7 +8,8 @@ builds dictionaries from tagged sentences file
 """
 
 
-def build_dicts(path):
+def build_dicts(path, lines_to_read=-1):
+    loop_counter = 0
     # segment to POS-tag mappings
     seg_tag = dict()
     # tag to segment mappings
@@ -27,6 +28,9 @@ def build_dicts(path):
             else:
                 sentences.append(sentence)
                 sentence = []
+                if lines_to_read != -1 and loop_counter >= lines_to_read:
+                    break
+            loop_counter += 1
 
     return {
         "seg_tag": seg_tag,
@@ -61,7 +65,7 @@ returns bigram transitions dictionary from .gram file
 """
 
 
-def get_smoothed_transition(uni_dict, bigram_dict, delta=0.75):
+def get_smoothed_transition(uni_dict, bigram_dict, delta=1):
     trans_dict = dict()
     for tag_a in uni_dict.keys():
         for tag_b in uni_dict.keys():
@@ -101,6 +105,7 @@ def parse_transition(gram_path):
                     logprob = float(bigram.pop(0))
                     bigram_dict[tuple(bigram)] = logprob
 
+    # return bigram_dict
     return get_smoothed_transition(unigram_dict, bigram_dict)
 
 
@@ -127,6 +132,19 @@ def _map_value_to_list(dict_obj, key, value):
         dict_obj[key].append(value)
     else:
         dict_obj[key] = [value]
+
+
+def get_word_tag_pair(path):
+    w_t = dict()
+    sentences = build_dicts(path)["sentences"]
+
+
+def get_lines_count(file):
+    with open(file) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
+
 
 #
 # """maybe in another file"""

@@ -1,5 +1,6 @@
 import sys
 import hmmtagger.tagger as hmm_tagger
+import basic_tagger
 from config import BASIC_MODEL_NAME, HMM_MODEL_NAME, TAGGED_FILE
 import file_parser as parser
 
@@ -23,6 +24,8 @@ def decode(model, test_file, param_files):
     tagged_path = TAGGED_FILE % model_name
     if model == '2':
         tagged = hmm_tagger.decode2(sentences, *param_files[:2])
+    elif model == '1':
+        tagged = basic_tagger.decode(sentences, *param_files)
 
     # write tagger results
     write_tagged(tagged_path, sentences, tagged)

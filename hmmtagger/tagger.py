@@ -20,8 +20,11 @@ def default_unseen_word_tag(word, tag, emission_dict):
     return -float("inf")
 
 
-def laplace_smooth_unseen_word(word, tag, emission_dict):
-    laplace_smooth_unseen_word.counter += 1
+def smooth_unseen_words(word, tag, emission_dict):
+    #  check if the word is unknown
+    if any((word, t) in emission_dict for t in TAGS):
+        return -float("inf")  # the word has been emitted by another tag
+    smooth_unseen_words.counter += 1
     if (UNKNOWN_WORD_SYMBOL, tag) not in emission_dict:
         return -float("inf")
     return emission_dict[UNKNOWN_WORD_SYMBOL, tag]
@@ -39,7 +42,8 @@ def unseen_word_smooth(word, tag, emission_dict):
         return 0
     return -float("inf")
 
-laplace_smooth_unseen_word.counter = 0
+
+smooth_unseen_words.counter = 0
 
 
 def decode2(sentences, lex_file, gram_file):
@@ -48,7 +52,7 @@ def decode2(sentences, lex_file, gram_file):
 
     unseen_w_f = default_unseen_word_tag
     if any(k[0] == UNKNOWN_WORD_SYMBOL for k in emission_dict):
-        unseen_w_f = laplace_smooth_unseen_word
+        unseen_w_f = smooth_unseen_words
 
     transition = create_transition_func(transition_dict,
                                         smoothing_func=lambda x, y: -float("inf"))
@@ -66,7 +70,7 @@ def decode(untagged_file, lex_file, gram_file, smooth, tagged_out=''):
 
     transition = create_transition_func(transition_dict, smoothing_func=lambda x, y: -float("inf"))
     emission = create_transition_func(emission_dict,
-                                      smoothing_func=lambda x, y: laplace_smooth_unseen_word(x, y, emission_dict))
+                                      smoothing_func=lambda x, y: smooth_unseen_words(x, y, emission_dict))
 
     model = 'sharp'
     if smooth:
@@ -97,7 +101,7 @@ def main(smooth):
     decode('../input-files/heb-pos.test', lex_file, gram_file, smooth)
     tagged_path = '../heb-pos.%s.tagged' % model
     evaluate_component(tagged_path, '../input-files/heb-pos.gold', model, '../output-files/base.eval')
-    print(laplace_smooth_unseen_word.counter)
+    print(smooth_unseen_words.counter)
 
 
 if __name__ == '__main__':

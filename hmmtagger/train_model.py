@@ -83,7 +83,7 @@ def calc_emission_prob(tag_dict, words, tags, smooth=True):
     # emission_dict = dict(map(lambda kv: (kv[0], f(kv[1])), tag_dict.items()))
     hist = partial(bucket_list, f=ln)
     voc_size = 0
-    DELTA = 0.09
+    DELTA = 0.02
     if smooth:  # laplace smoothing
         counts = map_dict(tag_dict, partial(bucket_list, normalize=False))
         voc_size = sum(map_dict(counts, lambda count: sum(count.values())).values())

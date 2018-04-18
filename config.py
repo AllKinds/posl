@@ -44,8 +44,8 @@ TAGS = ['AGR',
 
 ST = '<s>'
 ET = '</s>'
-LEX_FILE = 'fuck1.lex'
-GRAM_FILE = 'fuck1.gram'
+LEX_FILE = 'train.lex'
+GRAM_FILE = 'train.gram'
 TAGGED_FILE = 'heb-pos.%s.tagged'
 BASIC_MODEL_NAME = 'basic'
 HMM_MODEL_NAME = 'hmm'
